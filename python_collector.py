@@ -45,9 +45,9 @@ if __name__ == "__main__":
                 check, frame = cap.read()
                 if check:
                     frame_number += 1
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                    frame = cv2.resize(frame, (640, 480))
-                    rows, cols = frame.shape
+                    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    frame = cv2.resize(frame, (100, 100))
+                    rows, cols, dim = frame.shape
                     # flat_frame = frame.flatten()
                     flat_frame_encoded = base64.b64encode(frame)
                     flat_frame_encoded = flat_frame_encoded.decode('utf-8')
@@ -58,6 +58,7 @@ if __name__ == "__main__":
                         "Timestamp": datetime.timestamp(datetime.now()),
                         "rows": rows,
                         "cols": cols,
+                        "dim": dim,
                         "dtype": "unit8",
                         "data": flat_frame_encoded
                     }
