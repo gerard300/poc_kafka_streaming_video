@@ -9,31 +9,15 @@ from time import sleep
 import cv2
 from kafka import KafkaProducer
 
-# En destino
-# flat_frame_decoded = base64.decodebytes(flat_frame_encoded)
-# decoded_frame = np.frombuffer(flat_frame_decoded, dtype=np.uint8)
-# repe_frame = decoded_frame.reshape(h, w)
-
-# y = datetime.fromtimestamp(x)
-# y.strftime("%Y/%m/%d %H:%M:%S")
-
-# Ejemplo encoded-decoded base64
-# t = np.arange(25, dtype=np.float64)
-# s = base64.b64encode(t)
-# r = base64.decodebytes(s)
-# q = np.frombuffer(r, dtype=np.float64)
-
 if __name__ == "__main__":
     print(sys.argv)
     if len(sys.argv) < 4:
-        print("Usage: python 3-kafka_producer.py <low_thres> <high_thres> <topic_name> <data_filename>")
-        print("Suggested: python 3-kafka_producer.py 0.4 0.9 test data/sample_new_users.csv")
+        print("Usage: python python_collector.py 0.4 0.9 <topic_name> path/to/<file_name>.<video>")
     else:
         try:
             # Lectura de argumentos
             low = sys.argv[1]
             high = sys.argv[2]
-            # Topic será: kafka_video_stream
             topic = sys.argv[3]
             video = sys.argv[4]
 
@@ -45,12 +29,12 @@ if __name__ == "__main__":
                 check, frame = cap.read()
                 if check:
                     frame_number += 1
-                    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                    frame = cv2.resize(frame, (100, 100))
+                    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # Transformación básica a escala de grises
+                    frame = cv2.resize(frame, (100, 100)) # Se redimensiona la imagen para poder ser enviada
                     rows, cols, dim = frame.shape
-                    # flat_frame = frame.flatten()
-                    flat_frame_encoded = base64.b64encode(frame)
-                    flat_frame_encoded = flat_frame_encoded.decode('utf-8')
+                    # flat_frame = frame.flatten() # Si se quiere un vector
+                    flat_frame_encoded = base64.b64encode(frame) # Codificado en base64
+                    flat_frame_encoded = flat_frame_encoded.decode('utf-8') # base64 a String
 
                     # Crear el JSON a enviar
                     dict_info = {
@@ -65,7 +49,8 @@ if __name__ == "__main__":
                     string_json = json.dumps(dict_info).encode('utf-8')
 
                     # Productor de Kafka - Mejora de configuración
-                    producer = KafkaProducer(bootstrap_servers='localhost:9092')
+                    # Dos brokers, dos particiones en el topic
+                    producer = KafkaProducer(bootstrap_servers=['localhost:9092', 'localhost:9093'])
 
                     # Envío de datos a kafka - Podría no ser UTF-8
                     print("Sending messages to kafka {0} topic...".format(topic))
